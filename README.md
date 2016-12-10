@@ -98,7 +98,7 @@ AutoscalingLaunchConfiguration:
       config:
         commands:
           01_first_run:
-            command: "sh cfn-ecs.sh"
+            command: "sh firstrun.sh"
             env:
               PROXY_URL: { "Ref": "MyVpcProxyURL" }
               ECS_CLUSTER: { "Ref": "ApplicationCluster" }
