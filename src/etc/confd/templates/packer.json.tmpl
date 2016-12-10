@@ -1,0 +1,58 @@
+{
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{getv "/aws/access/key/id"}}",
+      "secret_key": "{{getv "/aws/secret/access/key"}}",
+      "token": "{{getv "/aws/session/token"}}",
+      "region": "{{getv "/aws/default/region" "us-west-2"}}",
+      "source_ami": "{{getv "/aws/source/ami"}}",
+      "instance_type": "{{getv "/aws/instance/type" "t2.micro"}}",
+      "ssh_username": "{{getv "/aws/ssh/username" "ec2-user"}}",
+      "ami_name": "{{getv "/ami/name" "casecommons-ecs-base"}} {{getv "/app/version" ""}}",
+      "security_group_id": "{{getv "/aws/security/group/id" ""}}",
+      "associate_public_ip_address": "true",
+      "tags": {
+        "Name": "{{getv "/ami/name" "casecommons-ecs-base"}}",
+        "Version": "{{getv "/app/version" ""}}"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "scripts/configure-timezone.sh",
+      "environment_vars": [
+        "TIME_ZONE={{getv "/time/zone" "America/Los_Angeles"}}"
+      ]
+    },
+    {
+      "type": "shell",
+      "script": "scripts/install-os-packages.sh"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/set-docker-opts.sh"
+    },
+    {
+      "type": "file",
+      "source": "files/firstrun.sh",
+      "destination": "/home/ec2-user/firstrun.sh"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/configure-cloud-init.sh"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/cleanup.sh"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "filename": "manifest.json",
+      "strip_path": true
+    }
+  ]
+}
