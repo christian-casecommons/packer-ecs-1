@@ -18,8 +18,9 @@ export TIME_ZONE ?= America/Los_Angeles
 # Common settings
 include Makefile.settings
 
-.PHONY: build clean
+.PHONY: build template clean
 
+# Builds image using packer
 build:
 	@ ${INFO} "Starting build..."
 	@ $(call assume_role,$(AWS_ROLE))
@@ -38,6 +39,17 @@ build:
 	@ docker cp $$(docker-compose $(BUILD_ARGS) ps -q packer):/packer/manifest.json build/
 	@ docker cp $$(docker-compose $(BUILD_ARGS) ps -q packer):/packer/build.log build/ 
 	@ ${INFO} "Build complete"
+
+# Generates packer template to stdout
+template:
+	@ $(call assume_role,$(AWS_ROLE))
+	@ ${INFO} "Creating packer security group..."
+	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS)/32,$(AWS_VPC_ID))
+	@ ${INFO} "Creating packer template..."
+	@ docker-compose $(BUILD_ARGS) run packer cat /packer/packer.json
+	@ ${INFO} "Deleting packer security group..."
+	@ $(call delete_packer_security_group,$(AWS_SG_NAME))
+	@ ${INFO} "Template complete"
 
 # Cleans environment
 clean: 

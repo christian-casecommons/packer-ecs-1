@@ -10,7 +10,7 @@ It adds the following modifications at build time:
 1. Upload the [`firstrun.sh`](src/files/firstrun.sh) script to `/home/ec2-user` (see below for details)
 1. Stop and disable the docker service, and clean up any docker logs or containers created during the build
 
-## Buiding the Image
+## Building the Image
 
 To build the image you must first ensure your AWS security configuration is in place and your environment configured correctly.  
 
@@ -56,6 +56,82 @@ export AWS_SOURCE_AMI ?= ami-7abc111a
 export TIME_ZONE ?= America/Los_Angeles
 ...
 ...
+```
+
+### Generating Packer Template
+
+The `make template` command generates the packer template but does not actually run the packer build process, instead simply outputting the generate `packer.json` file to the console.  This is useful for troubleshooting the packer template generation process.
+
+```
+$ make template
+=> Creating packer security group...
+=> Creating packer template...
+Creating network "packer_default" with the default driver
+2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Backend set to env
+2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Starting confd
+2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Backend nodes set to
+2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Target config /packer/packer.json out of sync
+2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Target config /packer/packer.json has been updated
+{
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "xxxx",
+      "secret_key": "xxxx",
+      "token": "xxxx",
+      "region": "us-west-2",
+      "source_ami": "ami-a2ca61c2",
+      "instance_type": "t2.micro",
+      "ssh_username": "ec2-user",
+      "ami_name": "Casecommons ECS Base Image 20161212072904.154d97a",
+      "security_group_id": "sg-096c7970",
+      "associate_public_ip_address": "true",
+      "tags": {
+        "Name": "Casecommons ECS Base Image",
+        "Version": "20161212072904.154d97a"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "scripts/configure-timezone.sh",
+      "environment_vars": [
+        "TIME_ZONE=America/Los_Angeles"
+      ]
+    },
+    {
+      "type": "shell",
+      "script": "scripts/install-os-packages.sh"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/set-docker-opts.sh"
+    },
+    {
+      "type": "file",
+      "source": "files/firstrun.sh",
+      "destination": "/home/ec2-user/firstrun.sh"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/configure-cloud-init.sh"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/cleanup.sh"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "filename": "manifest.json",
+      "strip_path": true
+    }
+  ]
+}
+=> Deleting packer security group...
+=> Template complete
 ```
 
 ## EC2 Container Instance First Run
