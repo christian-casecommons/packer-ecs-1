@@ -3,7 +3,7 @@ set -e
 
 # Set the Docker bridge interface to CGNAT (RFC 6598) address space
 # Set user namespace remap setting
-subnet=100.64.0.0/24
+subnet=100.64.0.1/24
 remap=default
 
 echo "### Setting Docker bridge interface subnet to $subnet ###"
