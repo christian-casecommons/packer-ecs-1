@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  packer:
+    build:
+      context: ../../
+      dockerfile: docker/build/Dockerfile
+      args:
+        project_name: ${PROJECT_NAME}
+    environment:
+      AMI_NAME: ${AMI_NAME}
+      APP_VERSION: ${APP_VERSION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_SOURCE_AMI: ${AWS_SOURCE_AMI}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_INSTANCE_TYPE: ${AWS_INSTANCE_TYPE}
+      AWS_SSH_USERNAME: ${AWS_SSH_USERNAME}
+      AWS_SECURITY_GROUP_ID: ${AWS_SECURITY_GROUP_ID}
+
