@@ -45,6 +45,8 @@ template:
 	@ $(call assume_role,$(AWS_ROLE))
 	@ ${INFO} "Creating packer security group..."
 	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS)/32,$(AWS_VPC_ID))
+	@ ${INFO} "Creating packer image..."
+	@ docker-compose $(BUILD_ARGS) build $(PULL_FLAG) packer
 	@ ${INFO} "Creating packer template..."
 	@ docker-compose $(BUILD_ARGS) run packer cat /packer/packer.json
 	@ ${INFO} "Deleting packer security group..."

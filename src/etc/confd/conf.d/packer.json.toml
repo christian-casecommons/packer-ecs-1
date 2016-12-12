@@ -4,9 +4,6 @@
  keys = [
   "/ami/name",
   "/app/version",
-  "/aws/access/key/id",
-  "/aws/secret/access/key",
-  "/aws/session/token",
   "/aws/default/region",
   "/aws/source/ami",
   "/aws/instance/type",
