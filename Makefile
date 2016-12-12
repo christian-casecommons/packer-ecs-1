@@ -18,26 +18,26 @@ export TIME_ZONE ?= America/Los_Angeles
 # Common settings
 include Makefile.settings
 
-.PHONY: build template clean
+.PHONY: release template clean
 
 # Builds image using packer
-build:
-	@ ${INFO} "Starting build..."
+release:
+	@ ${INFO} "Starting packer build..."
 	@ $(call assume_role,$(AWS_ROLE))
 	@ ${INFO} "Creating packer security group..."
 	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS)/32,$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
-	@ docker-compose $(BUILD_ARGS) build $(PULL_FLAG) packer
+	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) packer
 	@ ${INFO} "Running packer build..."
-	@ docker-compose $(BUILD_ARGS) up packer
+	@ docker-compose $(RELEASE_ARGS) up packer
 	@ ${INFO} "Deleting packer security group..."
 	@ $(call delete_packer_security_group,$(AWS_SG_NAME))
 	@ ${INFO} "Deleted packer security group..."
-	@ $(call check_exit_code,$(BUILD_ARGS),packer)
+	@ $(call check_exit_code,$(RELEASE_ARGS),packer)
 	@ rm -rf build
 	@ mkdir -p build
-	@ docker cp $$(docker-compose $(BUILD_ARGS) ps -q packer):/packer/manifest.json build/
-	@ docker cp $$(docker-compose $(BUILD_ARGS) ps -q packer):/packer/build.log build/ 
+	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/manifest.json build/
+	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/build.log build/ 
 	@ ${INFO} "Build complete"
 
 # Generates packer template to stdout
@@ -46,17 +46,17 @@ template:
 	@ ${INFO} "Creating packer security group..."
 	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS)/32,$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
-	@ docker-compose $(BUILD_ARGS) build $(PULL_FLAG) packer
+	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) packer
 	@ ${INFO} "Creating packer template..."
-	@ docker-compose $(BUILD_ARGS) run packer cat /packer/packer.json
+	@ docker-compose $(RELEASE_ARGS) run packer cat /packer/packer.json
 	@ ${INFO} "Deleting packer security group..."
 	@ $(call delete_packer_security_group,$(AWS_SG_NAME))
 	@ ${INFO} "Template complete"
 
 # Cleans environment
 clean: 
-	${INFO} "Destroying build environment..."
-	@ docker-compose $(BUILD_ARGS) down -v || true
+	${INFO} "Destroying release environment..."
+	@ docker-compose $(RELEASE_ARGS) down -v || true
 	${INFO} "Removing dangling images..."
 	@ $(call clean_dangling_images,$(PROJECT_NAME))
 	${INFO} "Clean complete"

@@ -16,10 +16,10 @@ To build the image you must first ensure your AWS security configuration is in p
 
 This image currently only supports assume role operation, meaning your AWS security configuration must support assuming the role specified via the `AWS_ROLE` setting defined in the [`Makefile`](./Makefile).
 
-To build the image:
+To build and publish the image:
 
 ```
-$ make build
+$ make release
 ```
 
 A build folder will be created with the following files:

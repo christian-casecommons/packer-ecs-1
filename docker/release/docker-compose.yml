@@ -4,7 +4,7 @@ services:
   packer:
     build:
       context: ../../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: docker/release/Dockerfile
       args:
         project_name: ${PROJECT_NAME}
     environment:
