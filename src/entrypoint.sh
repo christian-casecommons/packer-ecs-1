@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -o pipefail
 
 # Run confd to render config file(s)
 confd -onetime -backend env
