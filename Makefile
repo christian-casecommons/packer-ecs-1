@@ -23,7 +23,7 @@ include Makefile.settings
 # Builds image using packer
 release:
 	@ ${INFO} "Starting packer build..."
-	@ $(call assume_role,$(AWS_ROLE))
+	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
 	@ ${INFO} "Creating packer security group..."
 	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS)/32,$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
