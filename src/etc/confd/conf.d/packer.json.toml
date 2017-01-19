@@ -3,6 +3,7 @@
  dest  = "/packer/packer.json"
  keys = [
   "/ami/name",
+  "/ami/users",
   "/app/version",
   "/aws/default/region",
   "/aws/source/ami",

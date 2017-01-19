@@ -17,9 +17,21 @@
       "ami_name": "{{getv "/ami/name" "casecommons-ecs-base"}} {{getv "/app/version" ""}}",
       "security_group_id": "{{getv "/aws/security/group/id" ""}}",
       "associate_public_ip_address": "true",
+      {{ if exists "/ami/users" -}}
+      "ami_users": [
+        {{range $index, $user := split (getv "/ami/users") "," -}}
+        {{- if $index -}}
+        ,"{{$user}}"
+        {{- else -}}
+        "{{$user}}"
+        {{- end -}}
+        {{- end }}
+      ],
+      {{ end -}}
       "tags": {
         "Name": "{{getv "/ami/name" "casecommons-ecs-base"}}",
-        "Version": "{{getv "/app/version" ""}}"
+        "Version": "{{getv "/app/version" ""}}",
+        "Source": "{{getv "/aws/source/ami"}}" 
       }
     }
   ],
