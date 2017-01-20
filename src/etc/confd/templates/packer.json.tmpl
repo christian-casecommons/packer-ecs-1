@@ -19,10 +19,10 @@
       "associate_public_ip_address": "true",
       {{ if exists "/ami/users" -}}
       "ami_users": [
-        {{range $index, $user := split (getv "/ami/users") "," -}}
-        {{- if $index -}}
+        {{- range $index, $user := split (getv "/ami/users") "," -}}
+        {{ if (and $index $user) -}}
         ,"{{$user}}"
-        {{- else -}}
+        {{- else if $user }}
         "{{$user}}"
         {{- end -}}
         {{- end }}
