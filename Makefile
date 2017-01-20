@@ -52,7 +52,7 @@ template:
 # Cleans environment
 clean: 
 	${INFO} "Destroying release environment..."
-	@ docker-compose $(RELEASE_ARGS) down -v || true
+	@ docker-compose $(RELEASE_ARGS) down -v 2>/dev/null || true
 	${INFO} "Removing dangling images..."
 	@ $(call clean_dangling_images,$(PROJECT_NAME))
 	${INFO} "Clean complete"
