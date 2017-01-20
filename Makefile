@@ -43,15 +43,10 @@ release:
 
 # Generates packer template to stdout
 template:
-	@ $(call assume_role,$(AWS_ROLE))
-	@ ${INFO} "Creating packer security group..."
-	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS)/32,$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
-	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) packer
+	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) packer 2>/dev/null
 	@ ${INFO} "Creating packer template..."
-	@ docker-compose $(RELEASE_ARGS) run packer cat /packer/packer.json
-	@ ${INFO} "Deleting packer security group..."
-	@ $(call delete_packer_security_group,$(AWS_SG_NAME))
+	@ docker-compose $(RELEASE_ARGS) run packer cat /packer/packer.json 2>/dev/null
 	@ ${INFO} "Template complete"
 
 # Cleans environment
