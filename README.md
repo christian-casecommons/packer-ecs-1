@@ -49,6 +49,7 @@ AWS_SG_DESCRIPTION ?= "Temporary security group for Packer"
 # Packer settings
 export AMI_NAME ?= Casecommons ECS Base Image
 export AMI_USERS ?= 123456789012,234567890123
+export AMI_REGIONS ?= us-west-1,us-west-2
 export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)
 export AWS_INSTANCE_TYPE ?= t2.micro
 export AWS_DEFAULT_REGION ?= us-west-2
@@ -65,31 +66,39 @@ The `make template` command generates the packer template but does not actually 
 
 ```
 $ make template
-=> Creating packer security group...
-=> Creating packer template...
-Creating network "packer_default" with the default driver
-2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Backend set to env
-2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Starting confd
-2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Backend nodes set to
-2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Target config /packer/packer.json out of sync
-2016-12-11T18:29:11Z f7c3219d0435 confd[6]: INFO Target config /packer/packer.json has been updated
+=> Creating packer image...
+Step 1 : FROM alpine
+latest: Pulling from library/alpine
+...
+...
+2017-01-20T00:08:54Z ccb09ec4cbe2 confd[7]: INFO Backend set to env
+2017-01-20T00:08:54Z ccb09ec4cbe2 confd[7]: INFO Starting confd
+2017-01-20T00:08:54Z ccb09ec4cbe2 confd[7]: INFO Backend nodes set to
+2017-01-20T00:08:54Z ccb09ec4cbe2 confd[7]: INFO Target config /packer/packer.json out of sync
+2017-01-20T00:08:54Z ccb09ec4cbe2 confd[7]: INFO Target config /packer/packer.json has been updated
 {
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "aws_session_token": "{{env `AWS_SESSION_TOKEN`}}"
+  },
   "builders": [
     {
       "type": "amazon-ebs",
-      "access_key": "xxxx",
-      "secret_key": "xxxx",
-      "token": "xxxx",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "token": "{{user `aws_session_token`}}",
       "region": "us-west-2",
-      "source_ami": "ami-a2ca61c2",
+      "source_ami": "ami-5b6dde3b",
       "instance_type": "t2.micro",
       "ssh_username": "ec2-user",
-      "ami_name": "Casecommons ECS Base Image 20161212072904.154d97a",
-      "security_group_id": "sg-096c7970",
+      "ami_name": "Casecommons ECS Base Image 20170120130847.b663897",
+      "security_group_id": "",
       "associate_public_ip_address": "true",
       "tags": {
         "Name": "Casecommons ECS Base Image",
-        "Version": "20161212072904.154d97a"
+        "Version": "20170120130847.b663897",
+        "Source": "ami-5b6dde3b"
       }
     }
   ],
@@ -131,7 +140,6 @@ Creating network "packer_default" with the default driver
     }
   ]
 }
-=> Deleting packer security group...
 => Template complete
 ```
 

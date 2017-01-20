@@ -28,6 +28,17 @@
         {{- end }}
       ],
       {{ end -}}
+      {{ if exists "/ami/regions" -}}
+      "ami_regions": [
+        {{- range $index, $region := split (getv "/ami/regions") "," -}}
+        {{ if (and $index $region) -}}
+        ,"{{$region}}"
+        {{- else if $region }}
+        "{{$region}}"
+        {{- end -}}
+        {{- end }}
+      ],
+      {{ end -}}
       "tags": {
         "Name": "{{getv "/ami/name" "casecommons-ecs-base"}}",
         "Version": "{{getv "/app/version" ""}}",

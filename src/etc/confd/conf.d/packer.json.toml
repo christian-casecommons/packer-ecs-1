@@ -4,6 +4,7 @@
  keys = [
   "/ami/name",
   "/ami/users",
+  "/ami/regions",
   "/app/version",
   "/aws/default/region",
   "/aws/source/ami",

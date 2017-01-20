@@ -9,6 +9,8 @@ services:
         project_name: ${PROJECT_NAME}
     environment:
       AMI_NAME: ${AMI_NAME}
+      AMI_USERS: ${AMI_USERS}
+      AMI_REGIONS: ${AMI_REGIONS}
       APP_VERSION: ${APP_VERSION}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}

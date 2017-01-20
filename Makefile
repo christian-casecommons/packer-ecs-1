@@ -9,6 +9,7 @@ AWS_SG_DESCRIPTION ?= "Temporary security group for Packer"
 # Packer settings
 export AMI_NAME ?= Casecommons ECS Base Image
 export AMI_USERS ?= 
+export AMI_REGIONS ?= 
 export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)
 export AWS_INSTANCE_TYPE ?= t2.micro
 export AWS_DEFAULT_REGION ?= us-west-2
