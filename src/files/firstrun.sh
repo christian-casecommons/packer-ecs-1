@@ -22,6 +22,10 @@ then
   sudo sed -i -r "s/^(OPTIONS=\".*)( --ip-masq[ =][^ \"]+)|(--ip-masq[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
   sudo sed -i -r "s/^(OPTIONS=\".*)( --iptables[ =][^ \"]+)|(--iptables[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
   sudo sed -i -r "s/^(OPTIONS=\".*)\"$/\1 --bridge=none --ip-forward=false --ip-masq=false --iptables=false\"/g" /etc/sysconfig/docker
+  # Remove Docker network database
+  sudo rm -rf /var/lib/docker/network
+  # Remove docker0 interface if it has been created
+  sudo ip link del docker0 || true
 fi
 
 # Write AWS Logs region
