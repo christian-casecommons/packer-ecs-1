@@ -12,8 +12,8 @@ if [ -n $PROXY_URL ]; then
    echo NO_PROXY=169.254.169.254 >> /etc/awslogs/proxy.conf
 fi
 
-# Enabled docker host networking mode if DOCKER_NETWORKING_MODE is set to "host"
-if [[ $DOCKER_NETWORKING_MODE = "host" ]]
+# Enabled docker host networking mode if DOCKER_NETWORK_MODE is set to "host"
+if [[ $DOCKER_NETWORK_MODE = "host" ]]
 then
   # Strip out --bip which is incompatible and existing values
   sudo sed -i -r "s/^(OPTIONS=\".*)( --bip[ =][^ \"]+)|(--bip[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
