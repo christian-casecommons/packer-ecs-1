@@ -14,7 +14,7 @@ export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)
 export AWS_INSTANCE_TYPE ?= t2.micro
 export AWS_DEFAULT_REGION ?= us-west-2
 export AWS_SSH_USERNAME ?= ec2-user
-export AWS_SOURCE_AMI ?= ami-8e7bc4ee
+export AWS_SOURCE_AMI ?= ami-022b9262
 export TIME_ZONE ?= America/Los_Angeles
 
 # Common settings
