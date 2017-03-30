@@ -14,3 +14,9 @@ sudo rm -f /var/log/docker /var/log/ecs/*
 sudo rm -Rf /var/run/docker.sock
 # https://github.com/docker/docker/issues/17691
 sudo rm -Rf /var/lib/docker/containers/* /var/lib/docker/linkgraph.db
+# Remove Docker network database
+sudo rm -rf /var/lib/docker/network
+# Remove docker0 interface if it has been created
+sudo ip link del docker0 || true
+# Remove SSH authorized keys
+rm /home/ec2-user/.ssh/authorized_keys

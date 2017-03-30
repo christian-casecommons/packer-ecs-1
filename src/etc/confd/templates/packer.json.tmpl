@@ -49,23 +49,23 @@
   "provisioners": [
     {
       "type": "shell",
-      "script": "scripts/configure-timezone.sh",
-      "environment_vars": [
-        "TIME_ZONE={{getv "/time/zone" "America/Los_Angeles"}}"
-      ]
-    },
-    {
-      "type": "shell",
       "script": "scripts/install-os-packages.sh"
-    },
-    {
-      "type": "shell",
-      "script": "scripts/set-docker-opts.sh"
     },
     {
       "type": "file",
       "source": "files/firstrun.sh",
       "destination": "/home/ec2-user/firstrun.sh"
+    },
+    {
+      "type": "file",
+      "source": "files/confd",
+      "destination": "/tmp"
+    },
+    {
+      "type": "shell",
+      "inline": [ 
+        "sudo mv /tmp/confd /etc"
+      ]
     },
     {
       "type": "shell",

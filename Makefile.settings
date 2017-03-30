@@ -6,7 +6,7 @@ RELEASE_COMPOSE_FILE := docker/release/docker-compose.yml
 # Docker Compose Project Names
 RELEASE_PROJECT := $(PROJECT_NAME)$(BUILD_ID)
 
-export MY_IP_ADDRESS := $(shell curl -s http://checkip.amazonaws.com)
+export MY_IP_ADDRESS ?= $(shell curl -s http://checkip.amazonaws.com)
 export TIMESTAMP := $(shell date +%Y%m%d%H%M%S)
 
 # AWS assume role settings

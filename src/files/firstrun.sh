@@ -1,78 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-# Set HTTP Proxy URL if provided
-# NOTE: Amazon Linux doesn't require a Yum proxy to get to its repository
-if [ -n $PROXY_URL ]; then
-   echo export HTTPS_PROXY=$PROXY_URL >> /etc/sysconfig/docker
-   echo HTTPS_PROXY=$PROXY_URL >> /etc/ecs/ecs.config
-   echo NO_PROXY=169.254.169.254,/var/run/docker.sock >> /etc/ecs/ecs.config
-   echo HTTP_PROXY=$PROXY_URL > /etc/awslogs/proxy.conf
-   echo HTTPS_PROXY=$PROXY_URL >> /etc/awslogs/proxy.conf
-   echo NO_PROXY=169.254.169.254 >> /etc/awslogs/proxy.conf
-fi
+# Render configuration files
+confd -onetime -backend env
 
-# Enabled docker host networking mode if DOCKER_NETWORK_MODE is set to "host"
-if [[ $DOCKER_NETWORK_MODE = "host" ]]
-then
-  # Strip out --bip which is incompatible and existing values
-  sudo sed -i -r "s/^(OPTIONS=\".*)( --bip[ =][^ \"]+)|(--bip[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
-  sudo sed -i -r "s/^(OPTIONS=\".*)( --bridge[ =][^ \"]+)|(--bridge[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
-  sudo sed -i -r "s/^(OPTIONS=\".*)( --ip-forward[ =][^ \"]+)|(--ip-forward[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
-  sudo sed -i -r "s/^(OPTIONS=\".*)( --ip-masq[ =][^ \"]+)|(--ip-masq[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
-  sudo sed -i -r "s/^(OPTIONS=\".*)( --iptables[ =][^ \"]+)|(--iptables[ =][^ \"]+[ ]*)(.*)/\1\4/g" /etc/sysconfig/docker
-  sudo sed -i -r "s/^(OPTIONS=\".*)\"$/\1 --bridge=none --ip-forward=false --ip-masq=false --iptables=false\"/g" /etc/sysconfig/docker
-  # Remove Docker network database
-  sudo rm -rf /var/lib/docker/network
-  # Remove docker0 interface if it has been created
-  sudo ip link del docker0 || true
-fi
-
-# Write AWS Logs region
-sudo tee /etc/awslogs/awscli.conf << EOF > /dev/null
-[plugins]
-cwlogs = cwlogs
-[default]
-region = ${AWS_DEFAULT_REGION}
-EOF
-
-# Write AWS Logs config
-sudo tee /etc/awslogs/awslogs.conf << EOF > /dev/null
-[general]
-state_file = /var/lib/awslogs/agent-state    
- 
-[/var/log/dmesg]
-file = /var/log/dmesg
-log_group_name = ${STACK_NAME}/ec2/${AUTOSCALING_GROUP}/var/log/dmesg
-log_stream_name = {instance_id}
-
-[/var/log/messages]
-file = /var/log/messages
-log_group_name = ${STACK_NAME}/ec2/${AUTOSCALING_GROUP}/var/log/messages
-log_stream_name = {instance_id}
-datetime_format = %b %d %H:%M:%S
-
-[/var/log/docker]
-file = /var/log/docker
-log_group_name = ${STACK_NAME}/ec2/${AUTOSCALING_GROUP}/var/log/docker
-log_stream_name = {instance_id}
-datetime_format = %Y-%m-%dT%H:%M:%S.%f
-
-[/var/log/ecs/ecs-init.log]
-file = /var/log/ecs/ecs-init.log*
-log_group_name = ${STACK_NAME}/ec2/${AUTOSCALING_GROUP}/var/log/ecs/ecs-init
-log_stream_name = {instance_id}
-datetime_format = %Y-%m-%dT%H:%M:%
-
-[/var/log/ecs/ecs-agent.log]
-file = /var/log/ecs/ecs-agent.log*
-log_group_name = ${STACK_NAME}/ec2/${AUTOSCALING_GROUP}/var/log/ecs/ecs-agent
-log_stream_name = {instance_id}
-datetime_format = %Y-%m-%dT%H:%M:%SZ
-EOF
-
-# Start services
+# Enable and start services
+sudo chkconfig ntpd on
+sudo chkconfig awslogs on
 sudo chkconfig docker on
+sudo service ntpd start
 sudo service awslogs start
 sudo service docker start
 sudo start ecs
