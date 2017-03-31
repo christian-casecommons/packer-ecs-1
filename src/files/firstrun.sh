@@ -8,12 +8,12 @@ confd -onetime -backend env
 ln -sf /usr/share/zoneinfo/${TIME_ZONE:-America/Los_Angeles} /etc/localtime
 
 # Enable and start services
-chkconfig ntpd on
-chkconfig awslogs on
-chkconfig docker on
-service ntpd start
-service awslogs start
-service docker start
+/sbin/chkconfig ntpd on
+/sbin/chkconfig awslogs on
+/sbin/chkconfig docker on
+/sbin/service ntpd start
+/sbin/service awslogs start
+/sbin/service docker start
 start ecs
 
 # Exit gracefully if ECS_CLUSTER is not defined
