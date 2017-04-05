@@ -3,7 +3,7 @@ export PROJECT_NAME ?= packer
 
 # AWS security settings
 AWS_ROLE ?= arn:aws:iam::429614120872:role/remoteAdmin
-AWS_SG_NAME ?= packer-$(MY_IP_ADDRESS)-$(TIMESTAMP)
+AWS_SG_NAME ?= packer-$(firstword $(subst /, ,$(MY_IP_ADDRESS)))-$(TIMESTAMP)
 AWS_SG_DESCRIPTION ?= "Temporary security group for Packer"
 
 # Packer settings
@@ -26,7 +26,7 @@ release:
 	@ ${INFO} "Starting packer build..."
 	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
 	@ ${INFO} "Creating packer security group..."
-	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS)/32,$(AWS_VPC_ID))
+	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS),$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
 	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) packer
 	@ ${INFO} "Running packer build..."
