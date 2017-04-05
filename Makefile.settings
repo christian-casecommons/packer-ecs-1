@@ -9,6 +9,13 @@ RELEASE_PROJECT := $(PROJECT_NAME)$(BUILD_ID)
 export MY_IP_ADDRESS ?= $(shell curl -s http://checkip.amazonaws.com)/32
 export TIMESTAMP := $(shell date +%Y%m%d%H%M%S)
 
+# Transforms Packer manifest.json to more structured output
+transform_manifest = cat $(1) \
+	| jq '.builds | map( . as $$o | .artifact_id | split(",")) \
+	| map( . as $$o | .[] | split(":") | {(.[0]): (.[1])}) \
+	| reduce .[] as $$o ( {}; ($$o|keys[0]) as $$key \
+	| . + { ($$key): (.[$$key] + $$o[$$key]) } )' > $(2)
+
 # AWS assume role settings
 # Conditionally attempts to assume IAM role using STS
 # Syntax: $(call assume_role,<role-arn>)

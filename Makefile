@@ -40,6 +40,7 @@ release:
 	@ mkdir -p build
 	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/manifest.json build/
 	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/build.log build/ 
+	@ $(call transform_manifest,build/manifest.json,build/images.json)
 	@ ${INFO} "Build complete"
 
 # Generates packer template to stdout
