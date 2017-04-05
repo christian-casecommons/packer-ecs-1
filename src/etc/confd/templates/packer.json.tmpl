@@ -48,6 +48,16 @@
   ],
   "provisioners": [
     {
+      "type": "file",
+      "source": "files/sshd_config",
+      "destination": "/tmp/sshd_config"
+    },
+    {
+      "type": "file",
+      "source": "files/issue.net",
+      "destination": "/tmp/issue.net"
+    },
+    {
       "type": "shell",
       "script": "scripts/install-os-packages.sh"
     },
@@ -70,6 +80,10 @@
     {
       "type": "shell",
       "script": "scripts/configure-cloud-init.sh"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/security.sh"
     },
     {
       "type": "shell",
