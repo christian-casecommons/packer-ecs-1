@@ -20,3 +20,5 @@ sudo rm -rf /var/lib/docker/network
 sudo ip link del docker0 || true
 # Remove SSH authorized keys
 rm /home/ec2-user/.ssh/authorized_keys
+# Remove /etc/resolv.conf
+sudo rm /etc/resolv.conf
