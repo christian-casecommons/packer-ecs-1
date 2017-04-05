@@ -6,7 +6,7 @@ services:
       context: ../../
       dockerfile: docker/release/Dockerfile
       args:
-        project_name: ${PROJECT_NAME}
+        packer_version: ${PACKER_VERSION}
     environment:
       AMI_NAME: ${AMI_NAME}
       AMI_USERS: ${AMI_USERS}

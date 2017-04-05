@@ -7,6 +7,7 @@ AWS_SG_NAME ?= packer-$(firstword $(subst /, ,$(MY_IP_ADDRESS)))-$(TIMESTAMP)
 AWS_SG_DESCRIPTION ?= "Temporary security group for Packer"
 
 # Packer settings
+export PACKER_VERSION ?= 0.12.3
 export AMI_NAME ?= Casecommons ECS Base Image
 export AMI_USERS ?= 
 export AMI_REGIONS ?= 
