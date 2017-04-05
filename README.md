@@ -1,6 +1,6 @@
 # Casecommons ECS Base Image
 
-This image is a derivative of the Amazon ECS-optimised AMI (currently version 2016.09.c). 
+This image is a derivative of the Amazon ECS-optimised AMI (currently version 2016.09.g). 
 
 It adds the following modifications at build time:
 
