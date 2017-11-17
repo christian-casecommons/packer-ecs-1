@@ -32,10 +32,11 @@ endef
 # Syntax: $(call create_packer_security_group,<group-name>,<group-description>,<allowed-cidr>)
 # Syntax: $(call delete_packer_security_group,<group-name>)
 delete_packer_security_group = aws ec2 delete-security-group --group-name $(1)
-create_security_group = aws ec2 create-security-group --group-name $(1) --description $(2) | jq .GroupId -r
+create_security_group = echo aws ec2 create-security-group --group-name $(1) --description "$(2)"
 define create_packer_security_group
-	$(eval export AWS_SECURITY_GROUP_ID = $(shell $(call create_security_group,$(1),$(2))))
-	aws ec2 authorize-security-group-ingress --group-id $(AWS_SECURITY_GROUP_ID) --protocol tcp --port 22 --cidr $(3)
+  $(shell echo $(call create_security_group,$(1),$(2)))
+	#$(eval export AWS_SECURITY_GROUP_ID = $(shell $(call create_security_group,$(1),$(2))))
+	#aws ec2 authorize-security-group-ingress --group-id $(AWS_SECURITY_GROUP_ID) --protocol tcp --port 22 --cidr $(3)
 endef
 
 # Arguments

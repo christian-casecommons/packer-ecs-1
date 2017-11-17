@@ -8,7 +8,7 @@ ENV ?= nil
 # AWS security settings
 AWS_ROLE ?= arn:aws:iam::334274607422:role/admin
 AWS_SG_NAME ?= packer-$(firstword $(subst /, ,$(MY_IP_ADDRESS)))-$(TIMESTAMP)
-AWS_SG_DESCRIPTION ?= "Temporary security group for Packer"
+AWS_SG_DESCRIPTION ?= "Temporary"
 
 # Packer settings
 export PACKER_VERSION ?= 0.12.3
@@ -63,3 +63,8 @@ clean:
 	${INFO} "Removing dangling images..."
 	@ $(call clean_dangling_images,$(PROJECT_NAME))
 	${INFO} "Clean complete"
+
+test:
+	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
+
+	@ $(call create_packer_security_group,$(AWS_SG_NAME),"$(AWS_SG_DESCRIPTION)",$(MY_IP_ADDRESS),$(AWS_VPC_ID))
