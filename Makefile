@@ -1,6 +1,8 @@
 # Project variables
 export PROJECT_NAME ?= packer
 
+# Provides override of exported environment variables
+ENV ?= nil
 # AWS security settings
 AWS_ROLE ?= arn:aws:iam::334274607422:role/admin
 AWS_SG_NAME ?= packer-$(firstword $(subst /, ,$(MY_IP_ADDRESS)))-$(TIMESTAMP)
@@ -15,12 +17,13 @@ export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)
 export AWS_INSTANCE_TYPE ?= t2.micro
 export AWS_DEFAULT_REGION ?= us-east-1
 export AWS_SSH_USERNAME ?= ec2-user
-export AWS_SOURCE_AMI ?= ami-04351e12
+export AWS_SOURCE_AMI ?= ami-6944c513
 
 # Common settings
 include Makefile.settings
+-include .env/$(ENV)
 
-.PHONY: release template clean
+.PHONY: release template clean orchestrate
 
 # Builds image using packer
 release:
@@ -42,6 +45,8 @@ release:
 	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/build.log build/
 	@ $(call transform_manifest,build/manifest.json,build/images.json)
 	@ ${INFO} "Build complete"
+
+orchestrate: release
 
 # Generates packer template to stdout
 template:
