@@ -1,6 +1,10 @@
 # Project variables
 export PROJECT_NAME ?= packer
 
+# ENV allows override of exported variables against those
+# defined in .env directory
+ENV ?= nil
+
 # AWS security settings
 AWS_ROLE ?= arn:aws:iam::334274607422:role/admin
 AWS_SG_NAME ?= packer-$(firstword $(subst /, ,$(MY_IP_ADDRESS)))-$(TIMESTAMP)
@@ -19,6 +23,7 @@ export AWS_SOURCE_AMI ?= ami-04351e12
 
 # Common settings
 include Makefile.settings
+-include .env/$(ENV)
 
 .PHONY: release template clean
 

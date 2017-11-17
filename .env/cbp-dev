@@ -1,0 +1,3 @@
+export AWS_ROLE=arn:aws:iam::334274607422:role/admin
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_SOURCE_AMI=ami-04351e12
