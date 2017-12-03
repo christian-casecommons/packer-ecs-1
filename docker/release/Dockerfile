@@ -13,6 +13,7 @@ RUN echo "http://nl.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositori
 COPY src/etc/confd /etc/confd
 COPY src /packer
 WORKDIR /packer
+RUN chmod +x /packer/entrypoint.sh
 
 ENTRYPOINT ["/packer/entrypoint.sh"]
 CMD ["packer", "build", "packer.json"]
