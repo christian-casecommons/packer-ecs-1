@@ -47,10 +47,13 @@ PULL_FLAG = $(if $(findstring false,$(PULL)),,--pull)
 SHELL=/bin/bash -e -o pipefail
 
 # App version settings
-COMMIT_TIMESTAMP := $(shell echo $$(git log -1 --pretty='format:%cd' --date='format:%Y%m%d%H%M%S'))
-COMMIT_ID := $(shell echo $$(git rev-parse --short HEAD))
-COMMIT_TAG := $(shell echo $$(git tag --points-at HEAD))
-export APP_VERSION ?= $(COMMIT_TIMESTAMP).$(COMMIT_ID)$(if $(BUILD_ID),.$(BUILD_ID),)
+ifdef APP_VERSION
+	export APP_VERSION
+else
+	COMMIT_ID := $(shell git rev-parse --short HEAD)
+	export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)$(if $(BUILD_ID),.$(BUILD_ID),)
+endif
+# endif
 
 # Docker host settings
 DOCKER_HOST_IP := $(shell echo $$DOCKER_HOST | awk -F/ '{printf $$3}' | awk -F: '{printf $$1}')

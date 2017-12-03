@@ -11,7 +11,6 @@ export PACKER_VERSION ?= 0.12.3
 export AMI_NAME ?= Casecommons ECS Base Image
 export AMI_USERS ?=
 export AMI_REGIONS ?=
-export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)
 export AWS_INSTANCE_TYPE ?= t2.micro
 export AWS_DEFAULT_REGION ?= us-west-2
 export AWS_SSH_USERNAME ?= ec2-user
@@ -21,6 +20,9 @@ export AWS_SOURCE_AMI ?= ami-f5fc2c8d
 include Makefile.settings
 
 .PHONY: release template clean
+
+version:
+	@ echo $(APP_VERSION)
 
 # Builds image using packer
 release:
