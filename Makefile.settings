@@ -16,6 +16,18 @@ transform_manifest = cat $(1) \
 	| reduce .[] as $$o ( {}; ($$o|keys[0]) as $$key \
 	| . + { ($$key): (.[$$key] + $$o[$$key]) } )' > $(2)
 
+# AWS ECS metadata settings
+# Attempts to obtain ECS task definition IAM role credentials
+# Syntax: $(call get_ecs_credentials)
+get_ecs_credentials = curl --connect-timeout 5 -fs http://169.254.170.2$$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
+get_ecs_credential = jq --null-input '$(1)' | jq .$(2) -r
+define ecs_credentials
+	$(eval ECS_CREDENTIALS = $(shell $(get_ecs_credentials)))
+	$(if $(ECS_CREDENTIALS),$(eval export AWS_ACCESS_KEY_ID ?= $(shell $(call get_ecs_credential,$(ECS_CREDENTIALS),AccessKeyId))))
+	$(if $(ECS_CREDENTIALS),$(eval export AWS_SECRET_ACCESS_KEY ?= $(shell $(call get_ecs_credential,$(ECS_CREDENTIALS),SecretAccessKey))))
+	$(if $(ECS_CREDENTIALS),$(eval export AWS_SESSION_TOKEN ?= $(shell $(call get_ecs_credential,$(ECS_CREDENTIALS),Token))))
+endef
+
 # AWS assume role settings
 # Conditionally attempts to assume IAM role using STS
 # Syntax: $(call assume_role,<role-arn>)
@@ -53,7 +65,6 @@ else
 	COMMIT_ID := $(shell git rev-parse --short HEAD)
 	export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)$(if $(BUILD_ID),.$(BUILD_ID),)
 endif
-# endif
 
 # Docker host settings
 DOCKER_HOST_IP := $(shell echo $$DOCKER_HOST | awk -F/ '{printf $$3}' | awk -F: '{printf $$1}')

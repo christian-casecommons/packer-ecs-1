@@ -21,13 +21,11 @@ include Makefile.settings
 
 .PHONY: release template clean
 
-version:
-	@ echo $(APP_VERSION)
-
 # Builds image using packer
 release:
 	@ ${INFO} "Starting packer build..."
 	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
+	@ $(call ecs_credentials)
 	@ ${INFO} "Creating packer security group..."
 	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS),$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
