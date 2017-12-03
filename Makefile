@@ -2,7 +2,7 @@
 export PROJECT_NAME ?= packer
 
 # AWS security settings
-AWS_ROLE ?= arn:aws:iam::334274607422:role/admin
+AWS_ROLE ?= arn:aws:iam::429614120872:role/remoteAdmin
 AWS_SG_NAME ?= packer-$(firstword $(subst /, ,$(MY_IP_ADDRESS)))-$(TIMESTAMP)
 AWS_SG_DESCRIPTION ?= "Temporary security group for Packer"
 
@@ -13,9 +13,9 @@ export AMI_USERS ?=
 export AMI_REGIONS ?=
 export APP_VERSION ?= $(TIMESTAMP).$(COMMIT_ID)
 export AWS_INSTANCE_TYPE ?= t2.micro
-export AWS_DEFAULT_REGION ?= us-east-1
+export AWS_DEFAULT_REGION ?= us-west-2
 export AWS_SSH_USERNAME ?= ec2-user
-export AWS_SOURCE_AMI ?= ami-04351e12
+export AWS_SOURCE_AMI ?= ami-f5fc2c8d
 
 # Common settings
 include Makefile.settings
