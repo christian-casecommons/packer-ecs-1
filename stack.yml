@@ -195,8 +195,7 @@ Resources:
               env:
                 STACK_NAME:
                   Ref: AWS::StackName
-                AUTOSCALING_GROUP:
-                  Ref: ProxyAutoscalingGroup
+                AUTOSCALING_GROUP: ProxyAutoscalingGroup
                 AWS_DEFAULT_REGION:
                   Ref: AWS::Region
                 ECS_CLUSTER:
