@@ -2,6 +2,14 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Description: Packer Test Stack
 
+Parameters:
+  KeyName:
+    Type: String
+    Description: EC2 Key pair name
+  ImageId:
+    Type: String
+    Description: AMI ID
+
 Resources:
   Vpc:
     Type: AWS::EC2::VPC
@@ -93,4 +101,142 @@ Resources:
         Ref: PrivateRouteTable
       SubnetId:
         Ref: PrivateSubnet
+  ProxyCluster:
+    Type: AWS::ECS::Cluster
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action:
+            - sts:AssumeRole
+      Policies:
+        - PolicyName: ECSContainerInstancePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: Allow
+              Action:
+                - ecs:RegisterContainerInstance
+                - ecs:DeregisterContainerInstance
+              Resource:
+                - Fn::Sub: arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ProxyCluster}
+            - Effect: Allow
+              Action:
+                - ecs:DiscoverPollEndpoint
+                - ecs:Submit*
+                - ecs:Poll
+                - ecs:StartTelemetrySession
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - ecr:BatchCheckLayerAvailability
+                - ecr:BatchGetImage
+                - ecr:GetDownloadUrlForLayer
+                - ecr:GetAuthorizationToken
+              Resource: "*"
+        - PolicyName: CloudWatchLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogStreams
+              Resource:
+              - Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AWS::StackName}*
+  ProxySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        Fn::Sub: ${AWS::StackName} Proxy Security Group
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3128
+          ToPort: 3128
+          CidrIp: 172.16.1.0/24
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-proxy-sg
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: InstanceRole
+  ProxyLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            10_first_run:
+              command: sh firstrun.sh
+              env:
+                STACK_NAME:
+                  Ref: AWS::StackName
+                AUTOSCALING_GROUP:
+                  Ref: ProxyAutoscalingGroup
+                AWS_DEFAULT_REGION:
+                  Ref: AWS::Region
+                ECS_CLUSTER:
+                  Ref: ProxyCluster
+              cwd: /home/ec2-user/
+    Properties:
+      ImageId:
+        Ref: ImageId
+      InstanceType: t2.micro
+      AssociatePublicIpAddress: true
+      IamInstanceProfile:
+        Ref: InstanceProfile
+      KeyName: admin-shared-key
+      SecurityGroups:
+        - ProxySecurityGroup
+      UserData:
+        Fn::Base64:
+          Fn::Sub: |
+            #!/bin/bash
+            trap 'kill $(jobs -p)' EXIT
+            tail --retry -F /var/log/cfn-init.log >> /dev/console &
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource ProxyLaunchConfiguration --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ProxyAutoscalingGroup --region ${AWS::Region}
+  ProxyAutoscalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT15M
+    Properties:
+      VPCZoneIdentifier:
+        - Ref: PublicSubnet
+      LaunchConfigurationName:
+        Ref: ProxyLaunchConfiguration
+      MinSize: 0
+      MaxSize: 2
+      DesiredCapacity: 1
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-proxy-instance
+          PropagateAtLaunch: true
   
