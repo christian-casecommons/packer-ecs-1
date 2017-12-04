@@ -207,7 +207,7 @@ Resources:
         Ref: InstanceProfile
       KeyName: admin-shared-key
       SecurityGroups:
-        - ProxySecurityGroup
+        - Ref: ProxySecurityGroup
       UserData:
         Fn::Base64:
           Fn::Sub: |
