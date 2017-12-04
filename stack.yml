@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Packer Test Stack
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-vpc
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-igw
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGateway
+      VpcId:
+        Ref: Vpc
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-public-route-table
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-private-route-table
+  PublicDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn:
+    - InternetGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+      RouteTableId:
+        Ref: PublicRouteTable
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      CidrBlock: 172.16.0.0/24
+      AvailabilityZone: 
+        Fn::Sub: ${AWS::Region}a
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-public-subnet-a
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      CidrBlock: 172.16.1.0/24
+      AvailabilityZone: 
+        Fn::Sub: ${AWS::Region}a
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-private-subnet-a
+  PublicRouting:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet
+  PrivateRouting:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: PrivateSubnet
+  
