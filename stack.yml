@@ -3,9 +3,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Packer Test Stack
 
 Parameters:
-  KeyName:
-    Type: String
-    Description: EC2 Key pair name
   ImageId:
     Type: String
     Description: AMI ID
