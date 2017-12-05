@@ -361,7 +361,7 @@ Resources:
       ContainerDefinitions:
       - Name: squid
         Image: 
-          Fn::Sub: ${AWS::Account}.dkr.ecr.${AWS::Region}.amazonaws.com/cwds/squid
+          Fn::Sub: ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/cwds/squid
         MemoryReservation: 400
         PortMappings:
           - ContainerPort: 3128
