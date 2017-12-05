@@ -284,4 +284,89 @@ Resources:
           Value:
             Fn::Sub: ${AWS::StackName}-proxy-instance
           PropagateAtLaunch: true
-  
+  DmesgLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName:
+        Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/dmesg
+      RetentionInDays: 7
+  DockerLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName:
+        Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/docker
+      RetentionInDays: 7
+  EcsAgentLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName:
+        Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/ecs/ecs-agent
+      RetentionInDays: 7
+  EcsInitLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName:
+        Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/ecs/ecs-init
+      RetentionInDays: 7
+  MessagesLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName:
+        Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/messages
+      RetentionInDays: 7
+  ProxyService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - ProxyAutoscalingGroup
+    Properties:
+      Cluster:
+        Ref: ProxyCluster
+      TaskDefinition:
+        Ref: ProxyTaskDefinition
+      DesiredCount: 1
+      DeploymentConfiguration:
+          MinimumHealthyPercent: 0
+          MaximumPercent: 200
+      LoadBalancers:
+        - ContainerName: squid
+          ContainerPort: 3128
+          LoadBalancerName:
+            Ref: ProxyLoadBalancer
+      Role:
+        Ref: EcsServiceRole
+  EcsServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
+  ProxyTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      NetworkMode: host
+      ContainerDefinitions:
+      - Name: squid
+        Image: 
+          Fn::Sub: ${AWS::Account}.dkr.ecr.${AWS::Region}.amazonaws.com/cwds/squid
+        MemoryReservation: 400
+        PortMappings:
+          - ContainerPort: 3128
+            HostPort: 3128
+            Protocol: tcp
+        Environment:
+        - Name: AWS_REGIONS
+          Value:
+            Ref: AWS::Region
