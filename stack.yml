@@ -268,6 +268,12 @@ Resources:
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ProxyAutoscalingGroup --region ${AWS::Region}
   ProxyAutoscalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn:
+      - ProxyDmesgLogGroup
+      - ProxyDockerLogGroup
+      - ProxyEcsAgentLogGroup
+      - ProxyEcsInitLogGroup
+      - ProxyMessagesLogGroup
     CreationPolicy:
       ResourceSignal:
         Count: 1
@@ -285,35 +291,35 @@ Resources:
           Value:
             Fn::Sub: ${AWS::StackName}-proxy-instance
           PropagateAtLaunch: true
-  DmesgLogGroup:
+  ProxyDmesgLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/dmesg
       RetentionInDays: 7
-  DockerLogGroup:
+  ProxyDockerLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/docker
       RetentionInDays: 7
-  EcsAgentLogGroup:
+  ProxyEcsAgentLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/ecs/ecs-agent
       RetentionInDays: 7
-  EcsInitLogGroup:
+  ProxyEcsInitLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ec2/ProxyAutoscalingGroup/var/log/ecs/ecs-init
       RetentionInDays: 7
-  MessagesLogGroup:
+  ProxyMessagesLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Delete
     Properties:
@@ -368,6 +374,8 @@ Resources:
             HostPort: 3128
             Protocol: tcp
         Environment:
+        - Name: NO_WHITELIST
+          Value: true
         - Name: AWS_REGIONS
           Value:
             Ref: AWS::Region
