@@ -242,6 +242,7 @@ Resources:
                 STACK_NAME:
                   Ref: AWS::StackName
                 AUTOSCALING_GROUP: ProxyAutoscalingGroup
+                DOCKER_NETWORK_MODE: host
                 AWS_DEFAULT_REGION:
                   Ref: AWS::Region
                 ECS_CLUSTER:
