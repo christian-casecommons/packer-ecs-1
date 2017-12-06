@@ -1,6 +1,6 @@
 [general]
-state_file = /var/lib/awslogs/agent-state    
- 
+state_file = /var/lib/awslogs/agent-state
+
 [/var/log/dmesg]
 file = /var/log/dmesg
 log_group_name = {{ getv "/stack/name" }}/ec2/{{ getv "/autoscaling/group" }}/var/log/dmesg
