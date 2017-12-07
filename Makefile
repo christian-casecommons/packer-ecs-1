@@ -16,6 +16,12 @@ export AWS_DEFAULT_REGION ?= us-west-2
 export AWS_SSH_USERNAME ?= ec2-user
 export AWS_SOURCE_AMI ?= ami-f5fc2c8d
 
+# CloudFormation metadata commands
+ECS_CLUSTER_QUERY = aws cloudformation describe-stack-resources --stack-name packer-test --query "StackResources[?LogicalResourceId=='ProxyCluster'].PhysicalResourceId" --output text
+AUTOSCALING_GROUP_QUERY = aws cloudformation describe-stack-resources --stack-name packer-test --query "StackResources[?LogicalResourceId=='ProxyAutoscalingGroup'].PhysicalResourceId" --output text
+EC2_INSTANCE_QUERY = aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?AutoScalingGroupName=='$(AUTOSCALING_GROUP)'].Instances[0].InstanceId" --output text
+IP_ADDRESS_QUERY = aws ec2 describe-instances --instance-ids $(EC2_INSTANCE) --query "Reservations[].Instances[].PrivateIpAddress" --output text
+
 # Common settings
 include Makefile.settings
 
@@ -42,6 +48,18 @@ release:
 	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/build.log build/
 	@ $(call transform_manifest,build/manifest.json,build/images.json)
 	@ ${INFO} "Build complete"
+
+# Acceptance tests
+acceptance:
+	@ $(eval export ECS_CLUSTER ?= $(call shell,$(ECS_CLUSTER_QUERY)))
+	@ $(eval export AUTOSCALING_GROUP ?= $(call shell,$(AUTOSCALING_GROUP_QUERY)))
+	@ $(eval export EC2_INSTANCE ?= $(call shell,$(EC2_INSTANCE_QUERY)))
+	@ $(eval export IP_ADDRESS ?= $(call shell,$(IP_ADDRESS_QUERY)))
+	@ ${INFO} "Evaluated stack metadata:"
+	@ ${INFO} "  Proxy Cluster             -> $(ECS_CLUSTER)"
+	@ ${INFO} "  Proxy Auto Scaling Group  -> $(AUTOSCALING_GROUP)"
+	@ ${INFO} "  Proxy EC2 Instance        -> $(EC2_INSTANCE)"
+	@ ${INFO} "  Proxy Instance IP Address -> $(IP_ADDRESS)"
 
 # Generates packer template to stdout
 template:

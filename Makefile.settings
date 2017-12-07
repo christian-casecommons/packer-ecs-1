@@ -16,6 +16,13 @@ transform_manifest = cat $(1) \
 	| reduce .[] as $$o ( {}; ($$o|keys[0]) as $$key \
 	| . + { ($$key): (.[$$key] + $$o[$$key]) } )' > $(2)
 
+# Shell function that includes error handling 
+define shell
+	$(shell $(1))
+	$(if $(filter $(.SHELLSTATUS),0),,$(error An error occurred executing a shell command))
+	$(info executed command: $(1))
+endef
+
 # AWS ECS metadata settings
 # Attempts to obtain ECS task definition IAM role credentials
 # Syntax: $(call get_ecs_credentials)
