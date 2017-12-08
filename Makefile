@@ -68,3 +68,7 @@ clean:
 	@ $(call clean_dangling_images,$(PROJECT_NAME))
 	${INFO} "Clean complete"
 
+# Make will not attempt to evaluate arguments passed tasks as targets
+%:
+	@:
+
