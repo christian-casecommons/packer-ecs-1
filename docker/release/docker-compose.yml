@@ -1,23 +1,23 @@
 version: '2'
 
 services:
-  packer:
+  acceptance:
     build:
       context: ../../
       dockerfile: docker/release/Dockerfile
-      args:
-        packer_version: ${PACKER_VERSION}
     environment:
-      AMI_NAME: ${AMI_NAME}
-      AMI_USERS: ${AMI_USERS}
-      AMI_REGIONS: ${AMI_REGIONS}
-      APP_VERSION: ${APP_VERSION}
+      STACK_NAME: ${STACK_NAME}
+      ECS_CLUSTER_NAME: ${ECS_CLUSTER_NAME}
+      AUTOSCALING_GROUP_NAME: ${AUTOSCALING_GROUP_NAME}
+      IP_ADDRESS_TYPE: ${IP_ADDRESS_TYPE}
+      SSH_PRIVATE_KEY: ${SSH_PRIVATE_KEY}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
-      AWS_SOURCE_AMI: ${AWS_SOURCE_AMI}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
-      AWS_INSTANCE_TYPE: ${AWS_INSTANCE_TYPE}
-      AWS_SSH_USERNAME: ${AWS_SSH_USERNAME}
-      AWS_SECURITY_GROUP_ID: ${AWS_SECURITY_GROUP_ID}
-
+    command:
+      - pytest 
+      - -vv
+      - --ssh-config=ssh_config
+      - --sudo
+      - --junitxml=report.xml

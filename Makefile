@@ -16,11 +16,11 @@ export AWS_DEFAULT_REGION ?= us-west-2
 export AWS_SSH_USERNAME ?= ec2-user
 export AWS_SOURCE_AMI ?= ami-f5fc2c8d
 
-# CloudFormation metadata commands
-ECS_CLUSTER_QUERY = aws cloudformation describe-stack-resources --stack-name packer-test --query "StackResources[?LogicalResourceId=='ProxyCluster'].PhysicalResourceId" --output text
-AUTOSCALING_GROUP_QUERY = aws cloudformation describe-stack-resources --stack-name packer-test --query "StackResources[?LogicalResourceId=='ProxyAutoscalingGroup'].PhysicalResourceId" --output text
-EC2_INSTANCE_QUERY = aws autoscaling describe-auto-scaling-groups --query "AutoScalingGroups[?AutoScalingGroupName=='$(AUTOSCALING_GROUP)'].Instances[0].InstanceId" --output text
-IP_ADDRESS_QUERY = aws ec2 describe-instances --instance-ids $(EC2_INSTANCE) --query "Reservations[].Instances[].PrivateIpAddress" --output text
+# Stack metadata settings
+export STACK_NAME ?= packer-test
+export ECS_CLUSTER_NAME ?= ProxyCluster
+export AUTOSCALING_GROUP_NAME ?= ProxyAutoscalingGroup
+export IP_ADDRESS_TYPE ?= PublicIpAddress
 
 # Common settings
 include Makefile.settings
@@ -48,17 +48,19 @@ build:
 	@ $(call transform_manifest,build/manifest.json,build/images.json)
 	@ ${INFO} "Build complete"
 
-# Acceptance tests
-acceptance:
-	@ $(eval export ECS_CLUSTER ?= $(call shell,$(ECS_CLUSTER_QUERY)))
-	@ $(eval export AUTOSCALING_GROUP ?= $(call shell,$(AUTOSCALING_GROUP_QUERY)))
-	@ $(eval export EC2_INSTANCE ?= $(call shell,$(EC2_INSTANCE_QUERY)))
-	@ $(eval export IP_ADDRESS ?= $(call shell,$(IP_ADDRESS_QUERY)))
-	@ ${INFO} "Evaluated stack metadata:"
-	@ ${INFO} "  Proxy Cluster             -> $(ECS_CLUSTER)"
-	@ ${INFO} "  Proxy Auto Scaling Group  -> $(AUTOSCALING_GROUP)"
-	@ ${INFO} "  Proxy EC2 Instance        -> $(EC2_INSTANCE)"
-	@ ${INFO} "  Proxy Instance IP Address -> $(IP_ADDRESS)"
+# Runs acceptance tests as part of release process
+release:
+	@ $(eval export SSH_PRIVATE_KEY)
+	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
+	@ $(if $(AWS_CONTAINER_CREDENTIALS_RELATIVE_URI),$(call ecs_credentials),)
+	@ ${INFO} "Creating acceptance image..."
+	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) acceptance
+	@ ${INFO} "Running acceptance tests..."
+	@ docker-compose $(RELEASE_ARGS) up acceptance
+	@ $(call check_exit_code,$(RELEASE_ARGS),acceptance)
+	@ mkdir -p build
+	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q acceptance):/tests/report.xml build/
+	@ ${INFO} "Acceptance testing complete"
 
 # Generates packer template to stdout
 template:
