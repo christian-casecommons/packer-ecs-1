@@ -1,10 +1,12 @@
 #### STANDARD SETTINGS ####
 
 # Filenames
+BUILD_COMPOSE_FILE := docker/build/docker-compose.yml
 RELEASE_COMPOSE_FILE := docker/release/docker-compose.yml
 
 # Docker Compose Project Names
 RELEASE_PROJECT := $(PROJECT_NAME)$(BUILD_ID)
+BUILD_PROJECT := $(PROJECT_NAME)-build$(BUILD_ID)
 
 export MY_IP_ADDRESS ?= $(shell curl -s http://checkip.amazonaws.com)/32
 export TIMESTAMP := $(shell date +%Y%m%d%H%M%S)
@@ -15,13 +17,6 @@ transform_manifest = cat $(1) \
 	| map( . as $$o | .[] | split(":") | {(.[0]): (.[1])}) \
 	| reduce .[] as $$o ( {}; ($$o|keys[0]) as $$key \
 	| . + { ($$key): (.[$$key] + $$o[$$key]) } )' > $(2)
-
-# Shell function that includes error handling 
-define shell
-	$(shell $(1))
-	$(if $(filter $(.SHELLSTATUS),0),,$(error An error occurred executing a shell command))
-	$(info executed command: $(1))
-endef
 
 # AWS ECS metadata settings
 # Attempts to obtain ECS task definition IAM role credentials
@@ -58,6 +53,7 @@ define create_packer_security_group
 endef
 
 # Arguments
+BUILD_ARGS = -p $(BUILD_PROJECT) -f $(BUILD_COMPOSE_FILE) $(VERBOSE_FLAG)
 RELEASE_ARGS = -p $(RELEASE_PROJECT) -f $(RELEASE_COMPOSE_FILE) $(VERBOSE_FLAG)
 VERBOSE_FLAG = $(if $(VERBOSE),--verbose,)
 PULL_FLAG = $(if $(findstring false,$(PULL)),,--pull)

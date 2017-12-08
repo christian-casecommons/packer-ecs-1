@@ -25,27 +25,26 @@ IP_ADDRESS_QUERY = aws ec2 describe-instances --instance-ids $(EC2_INSTANCE) --q
 # Common settings
 include Makefile.settings
 
-.PHONY: release template clean
+.PHONY: build release template clean
 
 # Builds image using packer
-release:
+build:
 	@ ${INFO} "Starting packer build..."
 	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
 	@ $(if $(AWS_CONTAINER_CREDENTIALS_RELATIVE_URI),$(call ecs_credentials),)
 	@ ${INFO} "Creating packer security group..."
 	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS),$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
-	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) packer
+	@ docker-compose $(BUILD_ARGS) build $(PULL_FLAG) packer
 	@ ${INFO} "Running packer build..."
-	@ docker-compose $(RELEASE_ARGS) up packer
+	@ docker-compose $(BUILD_ARGS) up packer
 	@ ${INFO} "Deleting packer security group..."
 	@ $(call delete_packer_security_group,$(AWS_SG_NAME))
 	@ ${INFO} "Deleted packer security group..."
-	@ $(call check_exit_code,$(RELEASE_ARGS),packer)
-	@ rm -rf build
+	@ $(call check_exit_code,$(BUILD_ARGS),packer)
 	@ mkdir -p build
-	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/manifest.json build/
-	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q packer):/packer/build.log build/
+	@ docker cp $$(docker-compose $(BUILD_ARGS) ps -q packer):/packer/manifest.json build/
+	@ docker cp $$(docker-compose $(BUILD_ARGS) ps -q packer):/packer/build.log build/
 	@ $(call transform_manifest,build/manifest.json,build/images.json)
 	@ ${INFO} "Build complete"
 
@@ -64,13 +63,16 @@ acceptance:
 # Generates packer template to stdout
 template:
 	@ ${INFO} "Creating packer image..."
-	@ docker-compose $(RELEASE_ARGS) build $(PULL_FLAG) packer 2>/dev/null
+	@ docker-compose $(BUILD_ARGS) build $(PULL_FLAG) packer 2>/dev/null
 	@ ${INFO} "Creating packer template..."
-	@ docker-compose $(RELEASE_ARGS) run packer cat /packer/packer.json 2>/dev/null
+	@ docker-compose $(BUILD_ARGS) run packer cat /packer/packer.json 2>/dev/null
 	@ ${INFO} "Template complete"
 
 # Cleans environment
 clean:
+	${INFO} "Destroying build environment..."
+	@ rm -rf build
+	@ docker-compose $(BUILD_ARGS) down -v 2>/dev/null || true
 	${INFO} "Destroying release environment..."
 	@ docker-compose $(RELEASE_ARGS) down -v 2>/dev/null || true
 	${INFO} "Removing dangling images..."

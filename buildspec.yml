@@ -9,7 +9,7 @@ phases:
     commands:
       - export BUILD_ID=$(echo $CODEBUILD_BUILD_ID | sed 's/^[^:]*://g')
       - export APP_VERSION=$CODEBUILD_RESOLVED_SOURCE_VERSION.$BUILD_ID
-      - make release
+      - make build
   post_build:
     commands:
       - make clean
