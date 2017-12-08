@@ -1,6 +1,8 @@
 import os
 import json
 import pytest
+from .conftest import HOSTS
+testinfra_hosts = HOSTS
 
 def test_ecs_agent_is_running(host):
   cmd = host.run("status ecs")
@@ -11,10 +13,16 @@ def test_ecs_agent_metadata_is_running(host):
   cmd = host.run("curl -fs --connect-timeout 5 localhost:51678/v1/metadata")
   assert cmd.rc == 0
 
-@pytest.mark.skipif(os.environ.get("ECS_CLUSTER") is None,
-                    reason="ECS_CLUSTER is not defined")
-def test_ecs_agent_is_registered_to_cluster(host):
+def test_ecs_agent_is_registered_to_cluster(host, ecs_cluster):
   cmd = host.run("curl -fs --connect-timeout 5 localhost:51678/v1/metadata")
   metadata = json.loads(cmd.stdout)
-  assert metadata['Cluster'] == os.environ['ECS_CLUSTER']
-  
+  assert metadata['Cluster'] == ecs_cluster
+
+def test_ecs_agent_is_active(ecs_client, ecs_cluster, ec2_instances):
+  ci_list = ecs_client.list_container_instances(cluster=ecs_cluster)
+  container_instances = ecs_client.describe_container_instances(
+    cluster=ecs_cluster,
+    containerInstances=ci_list['containerInstanceArns']
+  )
+  status = [ci['status'] == 'ACTIVE' for ci in container_instances['containerInstances'] if ci['ec2InstanceId'] in ec2_instances]
+  assert all(status)

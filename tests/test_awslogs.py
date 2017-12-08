@@ -1,11 +1,16 @@
 import anyconfig
+import pytest
 import os
+from .conftest import HOSTS
+testinfra_hosts = HOSTS
 
 def test_awslogs_is_enabled_and_running(host):
   awslogs = host.service("awslogs")
   assert awslogs.is_running
   assert awslogs.is_enabled
 
+@pytest.mark.skipif(os.environ.get("AWS_DEFAULT_REGION") is None,
+                    reason="AWS_DEFAULT_REGION is not defined")
 def test_awslogs_region_is_configured(host):
   awscli = host.file("/etc/awslogs/awscli.conf")
   config = anyconfig.loads(awscli.content, ac_parser="ini")

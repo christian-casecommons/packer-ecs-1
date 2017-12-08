@@ -1,3 +1,5 @@
 pytest
 testinfra
 anyconfig
+boto3
+paramiko

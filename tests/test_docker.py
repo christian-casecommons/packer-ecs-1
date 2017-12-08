@@ -1,3 +1,6 @@
+from .conftest import HOSTS
+testinfra_hosts = HOSTS
+
 def test_docker_is_enabled_and_running(host):
   docker = host.service("docker")
   assert docker.is_running
