@@ -1,0 +1,16 @@
+version: 0.2
+
+env:
+  SSH_PRIVATE_KEY: /ec2/ssh/admin-shared-key
+
+phases:
+  build:
+    commands:
+      - make release
+  post_build:
+    commands:
+      - make clean
+
+artifacts:
+  files:
+    - build/report.xml
