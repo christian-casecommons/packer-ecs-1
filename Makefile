@@ -73,7 +73,6 @@ template:
 # Cleans environment
 clean:
 	${INFO} "Destroying build environment..."
-	@ rm -rf build
 	@ docker-compose $(BUILD_ARGS) down -v 2>/dev/null || true
 	${INFO} "Destroying release environment..."
 	@ docker-compose $(RELEASE_ARGS) down -v 2>/dev/null || true
