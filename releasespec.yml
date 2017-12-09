@@ -1,7 +1,8 @@
 version: 0.2
 
 env:
-  SSH_PRIVATE_KEY: /ec2/ssh/admin-shared-key
+  parameter-store:
+    SSH_PRIVATE_KEY: /ec2/ssh/admin-shared-key
 
 phases:
   pre_build:
