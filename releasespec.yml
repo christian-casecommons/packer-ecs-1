@@ -4,8 +4,14 @@ env:
   SSH_PRIVATE_KEY: /ec2/ssh/admin-shared-key
 
 phases:
+  pre_build:
+    commands:
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --storage-driver=overlay&
+      - timeout -t 15 sh -c "until docker info; do echo .; sleep 1; done"
   build:
     commands:
+      - export BUILD_ID=$(echo $CODEBUILD_BUILD_ID | sed 's/^[^:]*://g')
+      - export APP_VERSION=$CODEBUILD_RESOLVED_SOURCE_VERSION.$BUILD_ID
       - make release
   post_build:
     commands:
