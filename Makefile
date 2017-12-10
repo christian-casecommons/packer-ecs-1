@@ -15,6 +15,8 @@ export AWS_INSTANCE_TYPE ?= t2.micro
 export AWS_DEFAULT_REGION ?= us-west-2
 export AWS_SSH_USERNAME ?= ec2-user
 export AWS_SOURCE_AMI ?= ami-f5fc2c8d
+export ECS_AGENT_VERSION ?=
+export ECS_RELEASE_VERSION ?=
 
 # Stack metadata settings
 export STACK_NAME ?= packer-test
@@ -30,9 +32,9 @@ include Makefile.settings
 # Builds image using packer
 build:
 	@ ${INFO} "Starting packer build..."
-	@ $(if $(and $(S3_BUCKET),$(S3_KEY)),$(call get_images_from_s3))
 	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
 	@ $(if $(AWS_CONTAINER_CREDENTIALS_RELATIVE_URI),$(call ecs_credentials),)
+	@ $(if $(and $(S3_BUCKET),$(S3_KEY)),$(call get_images_from_s3))
 	@ ${INFO} "Creating packer security group..."
 	@ $(call create_packer_security_group,$(AWS_SG_NAME),$(AWS_SG_DESCRIPTION),$(MY_IP_ADDRESS),$(AWS_VPC_ID))
 	@ ${INFO} "Creating packer image..."
