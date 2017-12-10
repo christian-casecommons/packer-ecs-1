@@ -19,10 +19,16 @@ export ECS_AGENT_VERSION ?=
 export ECS_RELEASE_VERSION ?=
 
 # Stack metadata settings
-export STACK_NAME ?= packer-test
+export STACK_NAME ?= ami-acceptance
+export STACK_OUTPUT_KEY ?= ImageIdOutput
 export ECS_CLUSTER_NAME ?= ProxyCluster
 export AUTOSCALING_GROUP_NAME ?= ProxyAutoscalingGroup
 export IP_ADDRESS_TYPE ?= PublicIpAddress
+
+# Publish commands
+AMI_IMAGE_QUERY ?= aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query "Stacks[].Outputs[?OutputKey=='$(STACK_OUTPUT_KEY)'].OutputValue" --output text
+COPY_IMAGE ?= aws ec2 copy-image --output text --name "$(AMI_NAME)" --region $(region) --source-image-id $(AMI_IMAGE) --source-region $(AWS_DEFAULT_REGION)
+SHARE_IMAGE ?= aws ec2 modify-image-attribute --image-id $(AMI_IMAGE) --launch-permission "{\"Add\":[$${AMI_USERS%?}]}"
 
 # Common settings
 include Makefile.settings
@@ -64,6 +70,15 @@ release:
 	@ mkdir -p build
 	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q acceptance):/tests/report.xml build/
 	@ ${INFO} "Acceptance testing complete"
+
+# Copies and shares AMI to other regions and accounts
+publish:
+	@ $(eval export AMI_IMAGE ?= $(shell $(AMI_IMAGE_QUERY)))
+	@ ${INFO} "Sharing image $(AMI_IMAGE) with accounts: $(AMI_USERS)..."
+	@ $(if $(AMI_USERS),$(eval export AMI_USERS=$(foreach user,$(AMI_USERS),{"UserId":"$(user)"},)),)
+	@ $(if $(AMI_USERS),$(SHARE_IMAGE),)
+	@ ${INFO} "Copying image $(AMI_IMAGE) to regions: $(AMI_REGIONS)..."
+	@ $(if $(AMI_REGIONS),$(foreach region,$(AMI_REGIONS),$(COPY_IMAGE);))
 
 # Generates packer template to stdout
 template:
