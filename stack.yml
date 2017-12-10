@@ -379,3 +379,9 @@ Resources:
         - Name: AWS_REGIONS
           Value:
             Ref: AWS::Region
+
+Outputs:
+  ImageIdOutput:
+    Description: Amazon Machine Image ID
+    Value:
+      Ref: ImageId
