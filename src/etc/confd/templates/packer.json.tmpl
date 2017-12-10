@@ -41,10 +41,10 @@
       {{ end -}}
       "tags": {
         "Name": "{{getv "/ami/name" "casecommons-ecs-base"}}",
-        "Version": "{{getv "/app/version" ""}}",
+        "Version": "{{getv "/app/version" " "}}",
         "Source": "{{getv "/aws/source/ami"}}",
-        "EcsReleaseVersion": "{{getv "/ecs/release/version" ""}}",
-        "EcsAgentVersion": "{{getv "/ecs/agent/version" ""}}"
+        "EcsReleaseVersion": "{{getv "/ecs/release/version" " "}}",
+        "EcsAgentVersion": "{{getv "/ecs/agent/version" " "}}"
       }
     }
   ],
