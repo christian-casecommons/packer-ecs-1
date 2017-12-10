@@ -30,6 +30,7 @@ include Makefile.settings
 # Builds image using packer
 build:
 	@ ${INFO} "Starting packer build..."
+	@ $(if $(and $(S3_BUCKET),$(S3_KEY)),$(call get_images_from_s3))
 	@ $(if $(or $(AWS_PROFILE),$(AWS_DEFAULT_PROFILE)),$(call assume_role,$(AWS_ROLE)),)
 	@ $(if $(AWS_CONTAINER_CREDENTIALS_RELATIVE_URI),$(call ecs_credentials),)
 	@ ${INFO} "Creating packer security group..."

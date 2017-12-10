@@ -10,5 +10,7 @@
   "/aws/source/ami",
   "/aws/instance/type",
   "/aws/ssh/username",
-  "/aws/security/group/id"
+  "/aws/security/group/id",
+  "/ecs/release/version",
+  "/ecs/agent/version"
  ]

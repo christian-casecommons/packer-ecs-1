@@ -18,6 +18,15 @@ transform_manifest = cat $(1) \
 	| reduce .[] as $$o ( {}; ($$o|keys[0]) as $$key \
 	| . + { ($$key): (.[$$key] + $$o[$$key]) } )' > $(2)
 
+# Obtains images from S3 bucket if set
+jq_query = jq --null-input '$(1)' | jq '$(2)' -r
+define get_images_from_s3
+	$(eval ECS_IMAGES = $(shell aws s3 cp s3://$(S3_BUCKET)/$(S3_KEY) -))
+	$(eval export AWS_SOURCE_AMI = $(shell $(call jq_query,$(ECS_IMAGES),.ECSAmis[].Regions."$(AWS_DEFAULT_REGION)".ImageId)))
+	$(eval export ECS_RELEASE_VERSION = $(shell $(call jq_query,$(ECS_IMAGES),.ECSAmis[].ReleaseVersion)))
+	$(eval export ECS_AGENT_VERSION = $(shell $(call jq_query,$(ECS_IMAGES),.ECSAmis[].AgentVersion)))
+endef
+
 # AWS ECS metadata settings
 # Attempts to obtain ECS task definition IAM role credentials
 # Syntax: $(call get_ecs_credentials)
