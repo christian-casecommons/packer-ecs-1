@@ -21,7 +21,7 @@ def test_awslogs_config(host):
   # anyconfig ini parser treats '%' as environment variable interpolator
   content = awscli.content.replace('%','%%')
   config = anyconfig.loads(content, ac_parser="ini")
-  prefix = 'packer-test/ec2/ProxyAutoscalingGroup'
+  prefix = '%s/ec2/%s' % (os.environ['STACK_NAME'],os.environ['AUTOSCALING_GROUP_NAME'])
   assert config['/var/log/dmesg']['log_group_name'] == prefix + '/var/log/dmesg'
   assert config['/var/log/messages']['log_group_name'] == prefix + '/var/log/messages'
   assert config['/var/log/docker']['log_group_name'] == prefix + '/var/log/docker'
