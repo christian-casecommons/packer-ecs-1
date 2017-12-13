@@ -206,6 +206,11 @@ AutoscalingLaunchConfiguration:
 
 ## Release Notes
 
+### Version 1.0.0
+
+- **NEW FEATURE** : Added support for environment cbp-acceptance
+
+
 ### Version 0.1.0
 
 - **NEW FEATURE** : Updated makefile for cbp-dev
